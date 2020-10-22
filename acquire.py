@@ -13,6 +13,49 @@ def get_connection(db, user=user, host=host, password=password):
     return f'mysql+pymysql://{user}:{password}@{host}/{db}'
 
 
+def read_csv_url_csv(url):
+    '''
+    This function follows a url to a csv and reads in the csv from the url
+    '''
+    df = pd.read_csv(url)
+    return df
+
+
+def get_csv_url_data(file_name, url, cached=False):
+    '''
+    This function reads in data fr if cached == False 
+    or if cached == True reads in df from a csv file, returns df
+    '''
+    if cached or os.path.isfile(file_name) == False:
+        df = read_csv_url_csv(url)
+    else:
+        df = pd.read_csv(file_name, index_col=0)
+    return df
+
+def get_sales(base_url, df_name):
+    '''
+    this needs some work to make more generic
+    '''
+    # get first page and make dataframe
+    response = requests.get('https://python.zach.lol/api/v1/sales')
+    data = response.json()
+    data.keys()
+    print('max_page: %s' % data['payload']['max_page'])
+    print('next_page: %s' % data['payload']['next_page'])
+    df_name = pd.DataFrame(data['payload']['sales'])
+    # get all pages
+    while data['payload']['next_page'] != 'None':
+        response = requests.get(base_url + data['payload']['next_page'])
+        data = response.json()
+        print('max_page: %s' % data['payload']['max_page'])
+        print('next_page: %s' % data['payload']['next_page'])
+        df_name = pd.concat([df_name, pd.DataFrame(data['payload']['sales'])])
+        if data['payload']['next_page'] == None:
+            break
+    df_name = df_name.reset_index()
+    print('full_shape', df_name.shape)
+    return df_name
+
 #################### Acquire Mall Customers Data ##################
 
 def new_mall_data():
