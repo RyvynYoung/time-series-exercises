@@ -1,0 +1,50 @@
+import numpy as np
+import pandas as pd
+
+from datetime import datetime
+from sklearn.metrics import mean_squared_error
+from math import sqrt
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+from pandas.plotting import register_matplotlib_converters
+
+import statsmodels.api as sm
+from statsmodels.tsa.api import Holt
+
+import warnings
+warnings.filterwarnings("ignore")
+import acquire
+import prepare
+import explore
+
+
+def split_data(df):
+    train_size = int(len(stores) * .5)
+    validate_size = int(len(stores) * .3)
+    test_size = int(len(stores) - train_size - validate_size)
+    validate_end_index = train_size + validate_size
+
+    # split into train, validation, test
+    train = stores[: train_size]
+    validate = stores[train_size : validate_end_index]
+    test = stores[validate_end_index : ]
+
+    train.shape, validate.shape, test.shape
+    print(len(train) + len(validate) + len(test) == len(stores))
+    return train, validate, test
+
+def wrangle_store_data():
+    # get data
+    df = acquire.get_store_data()
+    # prep data
+    df1 = prepare.prep_store_data(df)
+    df = df[df.index != '2016-02-29']
+    df = df[['sale_amount', 'sales_total']]
+    df.resample('D').sum()
+    # split and return train, validate, test
+    train, validate, test = split_data(df1)
+    return train, validate, test
+
+
+
