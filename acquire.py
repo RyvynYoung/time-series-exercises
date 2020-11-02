@@ -113,7 +113,7 @@ def get_store_data():
     
 ############################## opsd energy function  #############################
 
-def opsd_germany_daily():
+def germany_daily():
     """
     This function uses or creates the 
     opsd_germany_daily csv and returns a df.

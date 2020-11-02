@@ -20,18 +20,18 @@ import explore
 
 
 def split_data(df):
-    train_size = int(len(stores) * .5)
-    validate_size = int(len(stores) * .3)
-    test_size = int(len(stores) - train_size - validate_size)
+    train_size = int(len(df) * .5)
+    validate_size = int(len(df) * .3)
+    test_size = int(len(df) - train_size - validate_size)
     validate_end_index = train_size + validate_size
 
     # split into train, validation, test
-    train = stores[: train_size]
-    validate = stores[train_size : validate_end_index]
-    test = stores[validate_end_index : ]
+    train = df[: train_size]
+    validate = df[train_size : validate_end_index]
+    test = df[validate_end_index : ]
 
     train.shape, validate.shape, test.shape
-    print(len(train) + len(validate) + len(test) == len(stores))
+    print(len(train) + len(validate) + len(test) == len(df))
     return train, validate, test
 
 def wrangle_store_data():

@@ -23,19 +23,23 @@ def prep_store_data(df):
 
 
 def prep_germany_data(germany):
+    '''prepare dataset for explore'''
+    # convert date to datetime for time series analysis
     germany.Date = pd.to_datetime(germany.Date)
-    germany.Consumption.hist()
-    plt.show()
-    germany.Wind.hist()
-    plt.show()
-    germany.Solar.hist()
-    plt.show()
-    germany['Wind+Solar'].hist()
-    plt.show()
-    germany = germany.set_index('Date').sort_index()
-    germany['Month'] = germany.index.month
-    germany['Year'] = germany.index.year
+    # fill null values with 0
     germany = germany.fillna(0)
+    # rename column to python ok type
+    germany = germany.rename(columns={'Wind+Solar': 'orig_windsolar'})
+    # add calculated wind + solar column
+    germany['calc_windsolar'] = germany.Wind + germany.Solar
+    # set date as index for time series analysis
+    germany = germany.set_index('Date').sort_index()
+    
+    # create histograms
+    for col in germany.columns:
+        germany[col].hist()
+        plt.title(col)
+        plt.show()
     return germany
 
 

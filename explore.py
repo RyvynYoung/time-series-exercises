@@ -27,8 +27,54 @@ def average_df(df, y, period):
     ts_df = ts_df.resample(period).mean()
     return ts_df
 
+def split_data(df):
+    '''splits into train, validate, test'''
+    train_size = int(len(df) * .5)
+    validate_size = int(len(df) * .3)
+    test_size = int(len(df) - train_size - validate_size)
+    validate_end_index = train_size + validate_size
 
+    # split into train, validation, test
+    train = df[: train_size]
+    validate = df[train_size : validate_end_index]
+    test = df[validate_end_index : ]
+    # print the shape of each df
+    train.shape, validate.shape, test.shape
+    return train, validate, test
+
+def sanity_check_split(df1, train, validate, test):
+    '''checks train, validate, test splits'''
+    # Does the length of each df equate to the length of the original df?
+    print('df lengths add to total:', len(train) + len(validate) + len(test) == len(df1))
+    # Does the first row of original df equate to the first row of train?
+    print('1st row of full df == 1st row train:', df1.head(1) == train.head(1))
+    # Is the last row of train the day before the first row of validate? And the same for validate to test?
+    print('\n Is the last row of train the day before the first row of validate? And the same for validate to test?')
+    print(pd.concat([train.tail(1), validate.head(1)]))
+    print(pd.concat([validate.tail(1), test.head(1)]))
+    # Is the last row of test the same as the last row of our original dataframe?
+    print('\n Is the last row of test the same as the last row of our original dataframe?')
+    print(pd.concat([test.tail(1), df1.tail(1)]))
+
+def chart_splits(train, validate, test):
+    for col in train.columns:
+        plt.plot(train[col])
+        plt.plot(validate[col])
+        plt.plot(test[col])
+        plt.ylabel(col)
+        plt.title(col)
+        plt.show()
+
+def bar_plots(train):
+    train['month'] = train.index.month
+    for col in train.columns:
+        train.groupby('month')[col].mean().plot.bar()
+        plt.title(col)
+        plt.show()
+
+##### train, test only #####
 def split_data_percent(df):
+    ''' splits into train and test only'''
     train_size = .70
     n = df.shape[0]
     test_start_index = round(train_size * n)
@@ -41,6 +87,7 @@ def split_data_percent(df):
     return train, test
 
 def split_human(df, yearcut1, year2):
+    ''' train and test only'''
     # alternative Human based split method, use for germany data
     train = df[:yearcut1] # inclusive
     test = df[year2]
@@ -49,11 +96,6 @@ def split_human(df, yearcut1, year2):
     test.plot(ax=ax)
     return train, test
 
-def monthyear_bar_plots(df, target):
-    df['month'] = df.index.month
-    df['year'] = df.index.year
-    df.groupby('month').target.mean().plot.bar()
-    df.groupby('year').target.mean().plot.bathroom
 
 
 
