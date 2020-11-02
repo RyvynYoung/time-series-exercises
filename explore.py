@@ -70,26 +70,79 @@ def train_exp(train):
     train_exp = train.copy()
     train_exp['month'] = train_exp.index.month
     train_exp['weekday'] = train_exp.index.day_name()
-    train_exp['year'] = train_exp.index.year
     return train_exp
 
 def bar_plots(train):
     '''create bar plots for exploration'''
     # only create plots for non-category columns
-    train = train.select_dtypes(include=np.number)
     for col in train.columns:
-        train.groupby('month')[col].mean().plot.bar()
-        plt.title(col)
-        plt.show()
+        if col not in ['month', 'year', 'weekday']:
+            train.groupby('month')[col].mean().plot.bar()
+            plt.title(col)
+            plt.show()
 
 def sns_boxplot(train):
     '''create box plots for exploration'''
+    # only create plots for non-category columns
     for col in train.columns:
-        if col != train.month or col != train.weekday or col != train.year:
+        if col not in ['month', 'year', 'weekday']:
             order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
             sns.boxplot(data=train, y=col, x='weekday', order=order)
             plt.title(col)
             plt.show()
+
+# note: need to define y = target before running any of the below
+def resample_plot(y):
+    y.resample('D').mean().plot(alpha=.5, label='Daily')
+    y.resample('W').mean().plot(alpha=.8, label='Weekly')
+    y.resample('M').mean().plot(label='Montly')
+    plt.legend()
+
+def lag_plots(y):
+    shift_list = [-1, -7, -30, -90, -180, -365]
+    for i in shift_list:
+        plt.scatter(y, y.shift(i))
+        plt.xlabel('$y$')
+        plt.ylabel(f'$y shift{i}$')
+        plt.title(f'Lag plot with lag={i}')
+        plt.show()
+
+def seasonal_plot(y):
+    # .unstack turns an index level into columns
+    y.groupby([y.index.year, y.index.month]).mean().unstack(0).plot(title='Seasonal Plot')
+
+def season_subseries_plot(y):
+    table = y.groupby([y.index.year, y.index.month]).mean().unstack()
+
+    fig, axs = plt.subplots(1, 12, sharey=True, sharex=True)
+    for ax, (month, subset) in zip(axs, table.iteritems()):
+        subset.plot(ax=ax, title=month)
+        ax.hlines(subset.mean(), *ax.get_xlim(), ls='--')
+        ax.set(xlabel='')
+
+    axs[0].set(ylabel='Average monthly temp (F)')
+    fig.suptitle('Seasonal Subseries Plot') # super-title for the overall figure
+    fig.subplots_adjust(wspace=.05)
+
+def autocorrelation_plot(y):
+    plot = pd.plotting.autocorrelation_plot(y.resample('W').mean())
+    return plot
+
+# next function redefines y
+def seasonal_decomposition(train):
+    y = train.Consumption.resample('W').mean()
+    result = sm.tsa.seasonal_decompose(y)
+    decomposition = pd.DataFrame({
+        'y': result.observed,
+        'trend': result.trend,
+        'seasonal': result.seasonal,
+        'resid': result.resid,
+    })
+    return decomposition, result
+
+def decomposition_plot(decomposition):
+    decomposition.iloc[:, 1:].plot()
+
 
 ##### train, test only #####
 def split_data_percent(df):
