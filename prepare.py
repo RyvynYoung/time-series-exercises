@@ -26,6 +26,7 @@ def prep_germany_data(germany):
     '''prepare dataset for explore'''
     # convert date to datetime for time series analysis
     germany.Date = pd.to_datetime(germany.Date)
+    germany = germany[germany.Date >= '2012']
     # fill null values with 0
     germany = germany.fillna(0)
     # rename column to python ok type
@@ -34,15 +35,18 @@ def prep_germany_data(germany):
     germany['calc_windsolar'] = germany.Wind + germany.Solar
     # set date as index for time series analysis
     germany = germany.set_index('Date').sort_index()
-    
-    # create histograms
-    for col in germany.columns:
-        germany[col].hist()
-        plt.title(col)
-        plt.show()
+    # add columns for explore
+    # germany['month'] = germany.index.month
+    # germany['weekday'] = germany.index.day_name()
+    # germany['year'] = germany.index.year
+    # from Corey, make year, month, weekday into categories
+    # germany = (germany.astype({'year': 'category', 'month': 'category', 'weekday': 'category'}))
+    # if I make them categories bar and box plots don't work
     return germany
 
-
+    # train = train.select_dtypes(include=np.number)
+    # validate = validate.select_dtypes(include=np.number)
+    # test = test.select_dtypes(include=np.number)
 
 
 

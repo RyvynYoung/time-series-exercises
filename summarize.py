@@ -13,6 +13,12 @@ import scipy.stats as stats
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+def create_hist(germany):
+    # create histograms
+    for col in germany.columns:
+        germany[col].hist()
+        plt.title(col)
+        plt.show()
 
 def get_missing_rows(df):
     '''

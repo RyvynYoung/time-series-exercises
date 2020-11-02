@@ -65,12 +65,31 @@ def chart_splits(train, validate, test):
         plt.title(col)
         plt.show()
 
+def train_exp(train):
+    '''create copy of train and add category columns for exploration'''
+    train_exp = train.copy()
+    train_exp['month'] = train_exp.index.month
+    train_exp['weekday'] = train_exp.index.day_name()
+    train_exp['year'] = train_exp.index.year
+    return train_exp
+
 def bar_plots(train):
-    train['month'] = train.index.month
+    '''create bar plots for exploration'''
+    # only create plots for non-category columns
+    train = train.select_dtypes(include=np.number)
     for col in train.columns:
         train.groupby('month')[col].mean().plot.bar()
         plt.title(col)
         plt.show()
+
+def sns_boxplot(train):
+    '''create box plots for exploration'''
+    for col in train.columns:
+        if col != train.month or col != train.weekday or col != train.year:
+            order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            sns.boxplot(data=train, y=col, x='weekday', order=order)
+            plt.title(col)
+            plt.show()
 
 ##### train, test only #####
 def split_data_percent(df):
